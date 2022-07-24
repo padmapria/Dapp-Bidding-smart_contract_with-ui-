@@ -1,0 +1,30 @@
+npx create-next-app vending-machine-dapp
+cd <project-name>
+npm run dev
+
+# To install web3 to application
+npm i web3
+npm install --save-dev "hardhat@^2.10.1" "@nomicfoundation/hardhat-toolbox@^1.0.1"
+npm install bulma
+npm install dotenv --save
+
+npx hardhat
+
+To include chainlink
+-----------------------
+npm install @chainlink/contracts --save
+
+Create solidy contract, modify script/deploy.js and harhat-config.js
+---------------------------------------------------------------------
+npx hardhat compile
+npx hardhat run scripts/deploy.js
+
+npm run dev
+
+Create a project in infura
+--------------------------------
+Copy the endpoint url for the relavent network to our .env file
+and deploy it in the infura
+
+
+npx create-next-app blockchainbased-bidding-dapp

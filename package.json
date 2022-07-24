@@ -9,12 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chainlink/contracts": "^0.4.1",
+    "dotenv": "^16.0.1",
     "next": "12.2.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "web3": "^1.7.4"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^1.0.1",
     "eslint": "8.20.0",
-    "eslint-config-next": "12.2.3"
+    "eslint-config-next": "12.2.3",
+    "hardhat": "^2.10.1"
   }
 }
