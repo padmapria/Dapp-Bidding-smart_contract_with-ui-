@@ -6,39 +6,51 @@ pragma solidity ^0.8.9;
 //https://www.quicknode.com/guides/solidity/how-to-create-a-dutch-auction-smart-contract
 contract English_Auction {
 
+    //The below struct can fit in 1 storage slots  ( <32b)
+    // https://medium.com/@novablitz/storing-structs-is-costing-you-gas-774da988895e
     struct Bidding_item {
-        string prod_name;
-        uint prod_age;
-        address prod_owner;
-        uint starting_amt;
-        uint bid_endTime;
-        uint result_reveal_time;
+        address prod_owner;   //20bytes   # goes to storage slot 0
+        uint32 bid_endTime;  //4bytes  # goes to storage slot 0
+        uint32 result_reveal_time;
+        uint8 prod_age;    //1byte   # goes to storage slot 0
+        uint16 starting_amt;  //2bytes    # goes to storage slot 0
     }
     
-    Bidding_item public bidding_item;
-    address public owner;
-    address[]  bidder;
-    mapping (address => uint) public rejected_bidderToBid;
+    Bidding_item public s_bidding_item;
+    
+    //immutables stores value in code, wont go to bc storage 
+    address public immutable owner;
+
+    address[] public s_bidders;
+    mapping (address => uint) public s_rejected_bidderToBid;
     
     //To get the current state of auction
-    address public highestBidder;
-    uint public highestBid;
+    address public s_highestBidder;
+
+    //using unit8 outside struct is memory intensive
+    uint public s_highestBid;
+
 
     //https://www.tutorialspoint.com/solidity/solidity_events.htm
-    event highestBidding(string prod_name, address indexed _from,  uint _value);
-    event biddingEnded(string prod_name, address indexed _from,  uint _value);
+    event highestBidding(bytes32  prod_name, address indexed _from,  uint _value);
+    event biddingEnded(bytes32  prod_name, address indexed _from,  uint _value);
     
      // set the owner as the address that deployed the contract
     constructor()  {
         owner = msg.sender;
     }
 
-    function create_auction_item(string memory prod_name,uint prod_age, uint starting_amt, uint biddingDuration, uint reveal_time) public onlyOwner{
+
+    function create_auction_item(uint8 prod_age, uint16 starting_amt, uint16 end_time_mins) public onlyOwner{
+       
+       //https://soliditytips.com/articles/solidity-dates-time-operations/
+        uint16 time_to_sec = end_time_mins * 60;
+        uint32 bid_endTime = uint32(block.timestamp + time_to_sec);
+
+        uint32 result_reveal_time = bid_endTime +60;
+        uint32 amount = starting_amt;
         
-        uint amount = starting_amt *  10**18; //usd
-        uint bid_endTime = block.timestamp + biddingDuration;
-        uint result_reveal_time = bid_endTime+reveal_time;
-        bidding_item = Bidding_item(prod_name, prod_age,owner, amount,bid_endTime,result_reveal_time);
+        s_bidding_item = Bidding_item(owner, bid_endTime, result_reveal_time, prod_age, starting_amt);
     }
 
 
@@ -53,32 +65,34 @@ contract English_Auction {
     }
 
     modifier onlyBeforeEnd() {
-        require(block.timestamp < bidding_item.bid_endTime);
+        require(block.timestamp < s_bidding_item.bid_endTime);
         _;
     }
 
     modifier onlyAfterEnd() {
-        require(block.timestamp > bidding_item.bid_endTime);
+        require(block.timestamp > s_bidding_item.bid_endTime);
         _;
     }
 
     modifier onlyAfterReveal() {
-        require(block.timestamp > bidding_item.result_reveal_time);
+        require(block.timestamp > s_bidding_item.result_reveal_time);
         _;
     }
     
     /// Withdraw a bid that was lesser than the current highest bid, even before auction end
     function withdraw() public onlyNotOwner returns(bool success){
-        uint bid_amount = rejected_bidderToBid[msg.sender];
+        address sender = msg.sender;
+
+        uint bid_amount = s_rejected_bidderToBid[sender];
 
         if(bid_amount > 0) {
             //only with send we will be able to check if transfer is success or not
-            if(!payable(msg.sender).send(bid_amount)){
-                return false;
+            if(payable(sender).send(bid_amount)){
+                s_rejected_bidderToBid[sender] = 0;
+                return true;
             }
             else{
-                rejected_bidderToBid[msg.sender] = 0;
-                return true;
+                return false;
             }
         }
     }
@@ -86,15 +100,19 @@ contract English_Auction {
     //Return the money of all unsuccessful bidders to the bidders   
     function auctionEnd() public payable onlyOwner onlyAfterEnd {
 
+        address [] memory bidders = s_bidders;
+
         //Loop thru the bidders
-        for (uint i=0; i<bidder.length ; i++) {
+        for (uint i=0; i<bidders.length ; i++) {
+            
+            uint bid_amount = s_rejected_bidderToBid[bidders[i]];
             
             //If unsuccessful bidder has not withdrawan his amount till the auction end
-            if(rejected_bidderToBid[bidder[i]] > 0){
-                payable(bidder[i]).transfer (rejected_bidderToBid[bidder[i]] );
+            if(bid_amount > 0){
+                payable(bidders[i]).transfer (bid_amount);
 
                  //Since dont need to return any amount
-                rejected_bidderToBid[bidder[i]] = 0;
+                s_rejected_bidderToBid[bidders[i]] = 0;
             }           
         }
     }
@@ -102,34 +120,33 @@ contract English_Auction {
     // End the auction and send the highest bid to the owner.
     function reveal_aution_results() public payable onlyOwner onlyAfterReveal {
         //At the end of reveal time, transfer the amount sucessful bid amount to the owner
-        payable(owner).transfer(highestBid);
-        emit biddingEnded (bidding_item.prod_name, highestBidder, highestBid);
+        
+        uint highestBid = s_highestBid;
+        payable(owner).transfer(s_highestBid);
+        emit biddingEnded (s_bidding_item.prod_name, s_highestBidder, s_highestBid);
     }
 
    // Function to place bid
     function placeBid() internal onlyNotOwner returns(bool success) {
 
         uint amount = msg.value;
-        //Check bidder is already added
-        if(rejected_bidderToBid[msg.sender] != 0){
-            amount+= msg.value;
-        }
+        address sender = msg.sender;
+        
+        require(amount > s_highestBid, "Increase bid amount");
 
-         require(amount < bidding_item.starting_amt, "The  bidding amount must be more than the min bid amount");
-         require(amount > highestBid, "You must pay higher amount than the current highest bid");
-
-        rejected_bidderToBid[highestBidder] += highestBid;
+        s_rejected_bidderToBid[s_highestBidder]+= s_highestBid;
+        
         //Push the latest Bidder
-        bidder.push(msg.sender);
-        highestBid = amount;
-        highestBidder = msg.sender;
+        s_bidders.push(sender);
+        s_highestBid = amount;
+        s_highestBidder = sender;
 
-        emit highestBidding (bidding_item.prod_name, highestBidder, highestBid);
+        emit highestBidding (s_bidding_item.prod_name, sender, amount);
 
         return true;
     }
 
     function getAllBidders() public view returns (address [] memory) {
-        return bidder;
+        return s_bidders;
     }
 }
