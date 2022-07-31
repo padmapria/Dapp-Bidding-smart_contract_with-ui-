@@ -55,7 +55,7 @@ export default function addAuctionItem() {
           try {
             //https://www.youtube.com/watch?v=rXZSnUOhnwc
             await contract.methods.create_auction_item(prod_name,
-            prod_age, starting_price, auction_time ).send({
+            prod_age, starting_price , auction_time ).send({
               from: address, 
               gas: 3000000,
               gasPrice: null

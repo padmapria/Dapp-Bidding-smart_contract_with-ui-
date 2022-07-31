@@ -54,7 +54,7 @@ export default function fetchAuctionItem() {
       try {
         let result = await contract.methods.s_highestBidding().call();
         setHighest_bidder(result[0]);
-        setHighest_bid(result[1])
+        setHighest_bid(web3.utils.fromWei(result[1], 'ether'));
       } catch(err) {
         console.log(err)
       }
@@ -62,18 +62,16 @@ export default function fetchAuctionItem() {
 
     const fetch_auction_item  = async () => {
       if(contract){
-        alert(" Going to get auction item")
         try {
           //https://www.youtube.com/watch?v=rXZSnUOhnwc
           let result  = await contract.methods.s_bidding_item().call();
-          console.log("**********");
           console.log(result);
-          setProd_name(result[0].replace(/^(0x)0+((\w{4})+)$/, "$1$2"))
+          setProd_name(result[0])
           setProd_age(result[1])
           setProd_owner(result[2])
-          setStarting_amt(result[3])
-          setBid_endTime(result[4])
-          setResult_reveal_time(result[5])
+          setBid_endTime(result[3])
+          setResult_reveal_time(result[4])
+          setStarting_amt(result[5])
         
         } catch(err) {
           console.log(err)
@@ -94,7 +92,7 @@ export default function fetchAuctionItem() {
               //https://www.youtube.com/watch?v=rXZSnUOhnwc
               await contract.methods.placeBid().send({
                 from: address, 
-                value: new_bid,
+                value: web3.utils.toWei(new_bid, 'ether'),
                 gas: 3000000,
                 gasPrice: null
               });
@@ -133,7 +131,7 @@ export default function fetchAuctionItem() {
       </div>
       <br/>
       <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-        <label htmlFor="highestBid" className='col-sm-3 col-form-label' >Highest Bid : </label>
+        <label htmlFor="highestBid" className='col-sm-3 col-form-label' >Highest Bid in ether: </label>
           <output>{highest_bid} </output>
     </div>
       <br/>

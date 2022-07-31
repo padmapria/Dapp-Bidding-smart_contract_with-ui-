@@ -12,14 +12,14 @@ contract English_Auction {
         bytes32 prod_name;  //32byte   # goes to storage slot 0
         uint8 prod_age;    //1byte   # goes to storage slot 1
         address prod_owner;   //20bytes   # goes to storage slot 1
-        uint16 starting_amt;  //2bytes    # goes to storage slot 1
         uint32 bid_endTime;  //4bytes  # goes to storage slot 1
         uint32 result_reveal_time;  //4bytes  # goes to storage slot 1 
+        uint starting_amt;  //256bytes    # goes to storage slot 3  //To hold wei
     }
 
     struct HighestBidding {
         address bidder;
-        uint16 amount;
+        uint amount;
     }
     
     Bidding_item public s_bidding_item;
@@ -49,17 +49,16 @@ contract English_Auction {
     }
 
 
-    function create_auction_item(string memory prod_name, uint8 prod_age, uint16 starting_price, uint16 auction_time ) public onlyOwner{
+    function create_auction_item(string memory prod_name, uint8 prod_age, uint starting_price, uint16 auction_time ) public onlyOwner{
        
        //https://soliditytips.com/articles/solidity-dates-time-operations/
         uint16 time_to_sec = auction_time * 60;
         uint32 bid_endTime = uint32(block.timestamp + time_to_sec);
 
         uint32 result_reveal_time = bid_endTime +60;
-        uint16 amount = starting_price;
         bytes32 name_val = bytes32(bytes(prod_name));
 
-        s_bidding_item = Bidding_item(name_val,prod_age, owner,amount, bid_endTime, result_reveal_time);
+        s_bidding_item = Bidding_item(name_val,prod_age, owner, bid_endTime, result_reveal_time,starting_price);
       //  emit created_bid_item (s_bidding_item);
     }
 
@@ -149,7 +148,7 @@ contract English_Auction {
    // Function to place bid
     function placeBid() public payable onlyNotOwner returns(bool success) {
 
-        uint16 current_bid = uint16(msg.value);
+        uint current_bid = msg.value;
         address sender = msg.sender;
         
         HighestBidding memory bidding = s_highestBidding;  
