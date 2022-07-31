@@ -51,12 +51,16 @@ export default function fetchAuctionItem() {
     }
 
     const getBidding = async () => {
-      try {
-        let result = await contract.methods.s_highestBidding().call();
-        setHighest_bidder(result[0]);
-        setHighest_bid(web3.utils.fromWei(result[1], 'ether'));
-      } catch(err) {
-        console.log(err)
+      if(contract){
+        try {
+          let result = await contract.methods.s_highestBidding().call();
+          setHighest_bidder(result[0]);
+          setHighest_bid(web3.utils.fromWei(result[1], 'ether'));
+        } catch(err) {
+          console.log(err)
+        }
+      }else{
+        showAlert("Connect to metamask", "danger");
       }
     }
 
@@ -66,7 +70,7 @@ export default function fetchAuctionItem() {
           //https://www.youtube.com/watch?v=rXZSnUOhnwc
           let result  = await contract.methods.s_bidding_item().call();
           console.log(result);
-          setProd_name(result[0])
+          setProd_name(web3.utils.hexToString(result[0]))
           setProd_age(result[1])
           setProd_owner(result[2])
           setBid_endTime(result[3])
@@ -88,6 +92,12 @@ export default function fetchAuctionItem() {
         alert("Going to place a bid")
         e.preventDefault();
         if(contract){
+              getBidding();
+          if(highest_bid>= new_bid){
+            showAlert("bid for higher amount than current", "danger");
+            setNew_bid('')
+          }
+          else{
             try {
               //https://www.youtube.com/watch?v=rXZSnUOhnwc
               await contract.methods.placeBid().send({
@@ -103,10 +113,14 @@ export default function fetchAuctionItem() {
               setNew_bid('')
             } catch(err) {
               console.log(err)
-              showAlert("start Auction error", "danger");
+              showAlert("place bid error", "danger");
             }
-        } 
+         } 
         }
+         else{
+          showAlert("Connect to metamask", "danger");
+        }
+      }
      
   return (
     <>
@@ -114,34 +128,38 @@ export default function fetchAuctionItem() {
     backgroundImage: `url('/eth_logo.jpg')`,  
     backgroundSize: 'cover',  backgroundRepeat:'no-repeat', height : "100vh" }}>
     
-    <div className="container">
+    <div className="container" style={{ 
+              whiteSpace: "nowrap" }}>
       <Alert_msg alertmsg={alertmsg}/>
       <br/>
       <div className="row justify-content-md-center" > 
       <div className="col-6">
       <div className="d-inline-flex align-items-center  w-50 text-white">
-          <label htmlFor="metamask connect" className='col-sm-3 col-form-label'>Connect to metamask</label>
+          <label htmlFor="metamask connect" className='col-sm-7 col-form-label'>Connect to metamask</label>
          <Eng_Auction showAlert={showAlert}   setWeb3 = {setWeb3Val} 
          setAddressValue={setAddressVal}  setContract = {setContractVal} />
       </div>
       <br/>
-      <div className="d-inline-flex align-items-center  w-50 text-white">
-      <label htmlFor="highest bid" className='col-sm-3 col-form-label'>Connect to highest bid</label>
-      <button type="submit"  onClick={getBidding}  className="btn btn-primary mx-3">Highest Bidder</button>
-      </div>
       <br/>
-      <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-        <label htmlFor="highestBid" className='col-sm-3 col-form-label' >Highest Bid in ether: </label>
-          <output>{highest_bid} </output>
-    </div>
-      <br/>
-      <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-        <label htmlFor="highestBidder" className='col-sm-3 col-form-label' >Bidder : </label>
-          <output>{highest_bidder} </output>
-    </div>
-    <br/>
-      
-      
+      <h4 className="text-white mt-2">
+                Check current Highest Bid in ETH       
+        </h4>
+  
+        <div className="d-inline-flex align-items-center w-50 mt-3">
+          <button type="submit"  onClick={getBidding}  className="btn btn-primary mx-3">Highest Bid</button>
+        </div>
+        <br/>
+            <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
+              <label htmlFor="highestBidder" className='col-sm-3 col-form-label bold' >Bidder : </label>
+                <output>{highest_bidder} </output>
+          </div>
+            <br />
+            <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
+              <label htmlFor="highestBid" className='col-sm-3 col-form-label' >Amount in ETH: </label>
+                <output className="mx-5" >{highest_bid} </output>
+          </div>
+        <br/>
+    
       <h3 className="text-white mt-4">
           Place bid (Owner not allowed)
         </h3>
@@ -151,48 +169,48 @@ export default function fetchAuctionItem() {
           <label htmlFor="new_bid" className='col-sm-3 col-form-label' >Bid value</label>
           <input className="form-control"  type="number"  id="new_bid" 
            value={new_bid} onChange={(e) => setNew_bid(e.target.value)} placeholder="> base price, highest bid" 
-           pattern="[0-9.]+"  min="1" max="10"/>
+           pattern="[0-9.]+"  min="1" max="10" required/>
       </div>
       <br/>
-      <div className="d-inline-flex align-items-center  w-50 text-white">
-      <label htmlFor="new_bid" className='col-sm-3 col-form-label'>Submit new bid</label>
+      <div className="d-inline-flex align-items-center  w-50 text-white mt-3">
         <button type="submit"  onClick={place_bid}  className="btn btn-primary mx-3">Place bid</button>
       </div>
       </form>
       </div>
 
       <div className="col" > 
+         
           <button type="submit"  onClick={fetch_auction_item} className="btn btn-primary mx-3">Fetch Auction Item</button>
           <br/>
-          <div className="d-inline-flex align-items-center  w-50 mt-3  text-white">
+          <div className="d-inline-flex align-items-center  w-50 mt-3  text-white" >
           <label htmlFor="prodName" className='col-sm-3 col-form-label'>Name</label>
               <output> {prod_name} </output>
           </div>
           <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-          <label htmlFor="prodAge" className='col-sm-3 col-form-label' >Age</label>
+          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
+          <label htmlFor="prodAge" className='col-sm-3 col-form-label' > Age : </label>
             <output> {prod_age} </output>
           </div>
           <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-          <label htmlFor="prodOwner" className='col-sm-3 col-form-label' >Owner</label>
+          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
+          <label htmlFor="prodOwner" className='col-sm-3 col-form-label' >Owner :</label>
               <output> {prod_owner}   </output>
           </div>
           <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-          <label htmlFor="startingAmt" className='col-sm-3 col-form-label' >Starting Price</label>
-              <output> {starting_amt}   </output>
+          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
+          <label htmlFor="startingAmt" className='col-sm-3 col-form-label' >Starting Price : </label>
+              <output className="mx-5"> {starting_amt}   </output>
           </div>
           <br/>
           
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-            <label htmlFor="bidEndTime" className='col-sm-3 col-form-label' >Auction endtime</label>
-              <output>{bid_endTime} </output>
+          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
+            <label htmlFor="bidEndTime" className='col-sm-3 col-form-label' >Auction endtime :</label>
+              <output className="mx-5">{bid_endTime} </output>
         </div>
           <br/>
           <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-            <label htmlFor="resultRevealTime" className='col-sm-3 col-form-label' >Result Reveal Time</label>
-              <output>{result_reveal_time} </output>
+            <label htmlFor="resultRevealTime" className='col-sm-3 col-form-label' >Result Time :</label>
+              <output className="mx-5">{result_reveal_time} </output>
         </div>
         <br/>
       </div>
