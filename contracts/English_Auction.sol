@@ -147,7 +147,7 @@ contract English_Auction {
     }
 
    // Function to place bid
-    function placeBid() internal onlyNotOwner returns(bool success) {
+    function placeBid() public payable onlyNotOwner returns(bool success) {
 
         uint16 current_bid = uint16(msg.value);
         address sender = msg.sender;

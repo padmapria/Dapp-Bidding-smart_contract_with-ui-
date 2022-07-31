@@ -11,15 +11,6 @@ export default function addAuctionItem() {
     const [starting_price, setStarting_price] = useState(null)
     const [auction_time, setAuction_time] = useState(null)
 
-    useEffect(() => {
-      updateState()
-    }, [contract])
-  
-    const updateState = () => {
-     // if (contract) getBuyers()
-     
-    }
-
     // https://stackoverflow.com/questions/72016466/nextjs-pass-image-as-props-to-be-used-with-next-image
     const [alertmsg, setAlertmsg] = useState(null);
     const showAlert = (message, type)=>{
@@ -56,9 +47,9 @@ export default function addAuctionItem() {
           showAlert(alertmsg, "danger");
         }
     }
-    const start_auction  = async () => {
-      alert("start auction")
-      console.log("prod_name", prod_name)
+    const start_auction  = async (e) => {
+      //https://stackoverflow.com/questions/50193227/basic-react-form-submit-refreshes-entire-page
+      e.preventDefault();
       if(contract){
         alert('inside web3')
           try {
@@ -69,18 +60,17 @@ export default function addAuctionItem() {
               gas: 3000000,
               gasPrice: null
             });
-
-            var msg = "Successfully added bid item ******* "+valString;
+            var msg = "Successfully added bid item ******* "+prod_name;
             showAlert(msg , "success");
-            
-            if (contract) fetch_auction_item();
-            
+            setProd_age('')
+            setProd_name('')
+            setStarting_price('')
+            setAuction_time('')            
           } catch(err) {
             console.log(err)
             showAlert("start Auction error", "danger");
           }
-      }
-     
+      } 
       }
   return (
     <>

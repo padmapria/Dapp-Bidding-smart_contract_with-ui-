@@ -15,6 +15,7 @@ export default function fetchAuctionItem() {
     
     const [highest_bidder, setHighest_bidder] = useState(null)
     const [highest_bid, setHighest_bid] = useState(null)
+    const [new_bid, setNew_bid] = useState(null)
 
     useEffect(() => {
       updateState()
@@ -67,7 +68,6 @@ export default function fetchAuctionItem() {
           let result  = await contract.methods.s_bidding_item().call();
           console.log("**********");
           console.log(result);
-          console.log(result[0]);
           setProd_name(result[0].replace(/^(0x)0+((\w{4})+)$/, "$1$2"))
           setProd_age(result[1])
           setProd_owner(result[2])
@@ -85,8 +85,31 @@ export default function fetchAuctionItem() {
           showAlert("Connect to metamask", "danger");
         }
       }
+
+      const place_bid  = async (e) => {
+        alert("Going to place a bid")
+        e.preventDefault();
+        if(contract){
+            try {
+              //https://www.youtube.com/watch?v=rXZSnUOhnwc
+              await contract.methods.placeBid().send({
+                from: address, 
+                value: new_bid,
+                gas: 3000000,
+                gasPrice: null
+              });
+              var msg = "Successfully bidded ******* "+new_bid;
+              showAlert(msg , "success");
+              
+              if(contract) getBidding();
+              setNew_bid('')
+            } catch(err) {
+              console.log(err)
+              showAlert("start Auction error", "danger");
+            }
+        } 
+        }
      
-  
   return (
     <>
     <div className="wrapper" style={{ 
@@ -125,6 +148,19 @@ export default function fetchAuctionItem() {
           Place bid (Owner not allowed)
         </h3>
       <br />
+      <form className="form-inline">
+      <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
+          <label htmlFor="new_bid" className='col-sm-3 col-form-label' >Bid value</label>
+          <input className="form-control"  type="number"  id="new_bid" 
+           value={new_bid} onChange={(e) => setNew_bid(e.target.value)} placeholder="> base price, highest bid" 
+           pattern="[0-9.]+"  min="1" max="10"/>
+      </div>
+      <br/>
+      <div className="d-inline-flex align-items-center  w-50 text-white">
+      <label htmlFor="new_bid" className='col-sm-3 col-form-label'>Submit new bid</label>
+        <button type="submit"  onClick={place_bid}  className="btn btn-primary mx-3">Place bid</button>
+      </div>
+      </form>
       </div>
 
       <div className="col" > 
