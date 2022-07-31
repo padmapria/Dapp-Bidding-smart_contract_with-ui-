@@ -24,3 +24,8 @@ a {
     background: black;
   }
 }
+
+.alert i[class^="bi-"]{
+  font-size: 1.5em;
+  line-height: 1;
+}
