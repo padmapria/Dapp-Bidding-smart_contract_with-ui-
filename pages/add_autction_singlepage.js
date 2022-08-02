@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import Connect_metamask from './components/Connect_metamask';
 import Alert_msg from './components/Alert_msg';
-import Get_Bid_item from './components/Get_Bid_item';
 
-export default function addAuctionItem() {
+export default function add_autction_singlepage() {
     const [contract, setContract] = useState(null);
     const [web3, setWeb3] = useState(null)
     const [address, setAddress] = useState(null)
@@ -36,6 +35,18 @@ export default function addAuctionItem() {
       setWeb3(value);
     }
 
+    const fetch_auction_item  = async () => {
+      alert(" Going to fetch stored result")
+        try {
+          //https://www.youtube.com/watch?v=rXZSnUOhnwc
+          let result  = await contract.methods.s_bidding_item().call();
+          console.log("**********")
+          console.log(result)
+        }catch(err) {
+          console.log(err)
+          showAlert(alertmsg, "danger");
+        }
+    }
     const start_auction  = async (e) => {
       //https://stackoverflow.com/questions/50193227/basic-react-form-submit-refreshes-entire-page
       e.preventDefault();
@@ -67,51 +78,48 @@ export default function addAuctionItem() {
     backgroundImage: `url('/eth_logo.jpg')`,  
     backgroundSize: 'cover',  backgroundRepeat:'no-repeat', height : "100vh" }}>
     
-    <div className="container" style={{ 
-              whiteSpace: "nowrap" }}>
+    <div className="container">
       <Alert_msg alertmsg={alertmsg}/>
       <br/>
-      <div className="row justify-content-md-center"> 
-      <div className="col">
-     
-      <div className="d-inline-flex align-items-center  w-50 text-white">
-          <label htmlFor="metamask connect" className='col-sm-7 col-form-label'>Connect to metamask</label>
-         <Connect_metamask showAlert={showAlert}   setWeb3 = {setWeb3Val} 
-         setAddressValue={setAddressVal}  setContract = {setContractVal} className />
-      </div>
-      <br/>
-      
-      <h3 className="text-white mt-2">
+      <div className="mt-5"> 
+        <h3 className="text-white">
           Add item to bid (only owner)
         </h3>
       <br />
+     
+      <div className="d-inline-flex align-items-center  w-50 text-white">
+          <label htmlFor="metamask connect" className='col-sm-3 col-form-label'>Connect to metamask</label>
+          <Connect_metamask showAlert={showAlert}   setWeb3 = {setWeb3Val} 
+         setAddressValue={setAddressVal}  setContract = {setContractVal} className />
+      </div>
+      <br/>
       <form className="form-inline">
       <div className="d-inline-flex align-items-center  w-50 mt-3  text-white">
           <label htmlFor="prod_name" className='col-sm-3 col-form-label'>Product Name</label>
-          <input className="form-control mx-5"  type="text"  id="prod_name" value={prod_name}  placeholder="product name" pattern="^[a-zA-Z]+$" 
+          <input className="form-control"  type="text"  id="prod_name" value={prod_name}  placeholder="product name" pattern="^[a-zA-Z]+$" 
           onChange={(e) => setProd_name(e.target.value)}/>
       </div>
       <br/>
       <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
           <label htmlFor="age" className='col-sm-3 col-form-label' >Product Age</label>
-          <input className="form-control mx-5"  type="number"  id="prod_age" 
+          <input className="form-control"  type="number"  id="prod_age" 
            value={prod_age} onChange={(e) => setProd_age(e.target.value)} placeholder="produt Age" 
            pattern="[0-9.]+"  min="1" max="10"/>
       </div>
       <br/>
       <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
           <label htmlFor="amount"  className='col-sm-3 col-form-label'>Starting Price</label>
-          <input className="form-control  mx-5" type="number"  id="starting_price"  value={starting_price}  onChange={(e) => setStarting_price(e.target.value)}  placeholder="Starting Bid amount" 
+          <input className="form-control" type="number"  id="starting_price"  value={starting_price}  onChange={(e) => setStarting_price(e.target.value)}  placeholder="Starting Bid amount" 
            pattern="[0-9.]+" />
       </div>
       <br/>
       
       <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
           <label htmlFor="auctionTime" className='col-sm-3 col-form-label' >Auction duration</label>
-          <input className="form-control  mx-5" type="number"  id="auction_time" placeholder="Auction time in mins" 
+          <input className="form-control" type="number"  id="auction_time" placeholder="Auction time in mins" 
            value={auction_time} onChange={(e) => setAuction_time(e.target.value)} 
            pattern="[0-9.]+"  min="10" max="30"/>
-      </div>
+    </div>
       <br/>
       <div className="mt-2">
           <input type="checkbox" className="form-check-input mt-3 mx-2" id="exampleCheck1" />
@@ -122,11 +130,14 @@ export default function addAuctionItem() {
       </form>
       <br/>
       </div>
-           <Get_Bid_item  showAlert={showAlert} contract={contract} web3={web3}/>
-      </div>
-        
     </div>
     </div>
     </>
   )
 }
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+S

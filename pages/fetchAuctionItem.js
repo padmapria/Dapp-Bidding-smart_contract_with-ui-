@@ -1,18 +1,12 @@
 import { useState, useEffect } from 'react'
-import Eng_Auction from './Eng_Auction';
+import Connect_metamask from './components/Connect_metamask';
 import Alert_msg from './components/Alert_msg';
+import Get_Bid_item from './components/Get_Bid_item';
 
 export default function fetchAuctionItem() {
     const [contract, setContract] = useState(null);
     const [web3, setWeb3] = useState(null)
     const [address, setAddress] = useState(null)
-    const [prod_name, setProd_name] = useState(null)
-    const [prod_age, setProd_age] = useState(null)
-    const [prod_owner, setProd_owner] = useState(null)
-    const [starting_amt, setStarting_amt] = useState(null)
-    const [bid_endTime, setBid_endTime] = useState(null)
-    const [result_reveal_time, setResult_reveal_time] = useState(null)
-    
     const [highest_bidder, setHighest_bidder] = useState(null)
     const [highest_bid, setHighest_bid] = useState(null)
     const [new_bid, setNew_bid] = useState(null)
@@ -64,32 +58,7 @@ export default function fetchAuctionItem() {
       }
     }
 
-    const fetch_auction_item  = async () => {
-      if(contract){
-        try {
-          //https://www.youtube.com/watch?v=rXZSnUOhnwc
-          let result  = await contract.methods.s_bidding_item().call();
-          console.log(result);
-          setProd_name(web3.utils.hexToString(result[0]))
-          setProd_age(result[1])
-          setProd_owner(result[2])
-          setBid_endTime(result[3])
-          setResult_reveal_time(result[4])
-          setStarting_amt(result[5])
-        
-        } catch(err) {
-          console.log(err)
-          alert(err)
-          showAlert("Not fetched", "danger");
-        }
-      }
-        else{
-          showAlert("Connect to metamask", "danger");
-        }
-      }
-
       const place_bid  = async (e) => {
-        alert("Going to place a bid")
         e.preventDefault();
         if(contract){
               getBidding();
@@ -136,13 +105,13 @@ export default function fetchAuctionItem() {
       <div className="col-6">
       <div className="d-inline-flex align-items-center  w-50 text-white">
           <label htmlFor="metamask connect" className='col-sm-7 col-form-label'>Connect to metamask</label>
-         <Eng_Auction showAlert={showAlert}   setWeb3 = {setWeb3Val} 
+         <Connect_metamask showAlert={showAlert}   setWeb3 = {setWeb3Val} 
          setAddressValue={setAddressVal}  setContract = {setContractVal} />
       </div>
       <br/>
       <br/>
       <h4 className="text-white mt-2">
-                Check current Highest Bid in ETH       
+                Check current Highest Bid     
         </h4>
   
         <div className="d-inline-flex align-items-center w-50 mt-3">
@@ -177,43 +146,7 @@ export default function fetchAuctionItem() {
       </div>
       </form>
       </div>
-
-      <div className="col" > 
-         
-          <button type="submit"  onClick={fetch_auction_item} className="btn btn-primary mx-3">Fetch Auction Item</button>
-          <br/>
-          <div className="d-inline-flex align-items-center  w-50 mt-3  text-white" >
-          <label htmlFor="prodName" className='col-sm-3 col-form-label'>Name</label>
-              <output> {prod_name} </output>
-          </div>
-          <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
-          <label htmlFor="prodAge" className='col-sm-3 col-form-label' > Age : </label>
-            <output> {prod_age} </output>
-          </div>
-          <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
-          <label htmlFor="prodOwner" className='col-sm-3 col-form-label' >Owner :</label>
-              <output> {prod_owner}   </output>
-          </div>
-          <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
-          <label htmlFor="startingAmt" className='col-sm-3 col-form-label' >Starting Price : </label>
-              <output className="mx-5"> {starting_amt}   </output>
-          </div>
-          <br/>
-          
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white" >
-            <label htmlFor="bidEndTime" className='col-sm-3 col-form-label' >Auction endtime :</label>
-              <output className="mx-5">{bid_endTime} </output>
-        </div>
-          <br/>
-          <div className="d-inline-flex align-items-center w-50 mt-3 text-white">
-            <label htmlFor="resultRevealTime" className='col-sm-3 col-form-label' >Result Time :</label>
-              <output className="mx-5">{result_reveal_time} </output>
-        </div>
-        <br/>
-      </div>
+        <Get_Bid_item  showAlert={showAlert} contract={contract} web3={web3}/> 
     </div>
     </div>
     </div>

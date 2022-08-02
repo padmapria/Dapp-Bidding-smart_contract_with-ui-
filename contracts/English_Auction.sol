@@ -59,7 +59,10 @@ contract English_Auction {
         bytes32 name_val = bytes32(bytes(prod_name));
 
         s_bidding_item = Bidding_item(name_val,prod_age, owner, bid_endTime, result_reveal_time,starting_price);
+
+        s_highestBidding= HighestBidding(address(0),0);
       //  emit created_bid_item (s_bidding_item);
+      
     }
 
 
@@ -146,7 +149,7 @@ contract English_Auction {
     }
 
    // Function to place bid
-    function placeBid() public payable onlyNotOwner returns(bool success) {
+    function placeBid() public payable onlyNotOwner onlyBeforeEnd returns(bool success) {
 
         uint current_bid = msg.value;
         address sender = msg.sender;

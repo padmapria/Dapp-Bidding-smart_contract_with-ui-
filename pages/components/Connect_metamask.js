@@ -4,18 +4,15 @@ import { useState, useEffect } from 'react';
 // import English_Auction from "../artifacts/contracts/English_Auction.sol/English_Auction.json";
 // import * as contract_end_point from '../contract_deployed_endpoint';
 import Web3 from 'web3'
-import {Eng_contract} from './components/Eng_Auction_contract.js';
+import {Eng_contract} from './Eng_Auction_contract.js';
 
 //way1 to import from parent
 //export default function Eng_Auction({showAlert} ) {
 
 //way2
-export default function Eng_Auction(props) {
-    const [contract, setContract] = useState(null);
-    const [web3, setWeb3] = useState(null)
-    const [address, setAddress] = useState(null)
-
-    const connectToMetamask = async () => {
+export default function connect_metamask(props) {
+ 
+    const connectToMetamask = async (e) => {
         /* To check if metamask is installed */
         if (typeof window !== "undefined" && typeof window.ethereum !== "undefined") {
             try {
@@ -43,6 +40,7 @@ export default function Eng_Auction(props) {
 
               //way2
                props.showAlert(alertmsg, "success");
+               e.preventDefault();
             } catch(err) {
                props.showAlert("Failed to connect", "danger");
             }

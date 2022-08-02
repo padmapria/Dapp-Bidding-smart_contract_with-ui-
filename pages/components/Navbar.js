@@ -28,16 +28,18 @@ export default function Navbar() {
             </li>
             <li className="nav-item">
                 <Link href='fetchAuctionItem'>
-                    <a className="nav-link  text-white" href="#">Fetch Auction Item</a>
+                    <a className="nav-link  text-white" href="#">Bid</a>
                 </Link>
             </li>
             <li className="nav-item">
-                <Link href='/auction'>
-                    <a className="nav-link  text-white" href="#">Auction</a>
+                <Link href='/withdraw'>
+                    <a className="nav-link  text-white" href="#">Withdraw</a>
                 </Link>
             </li>
             <li className="nav-item">
-                <a className="nav-link text-white disabled" href="#">Disabled</a>
+                <Link href='/bidding_result'>
+                    <a className="nav-link  text-white" href="#">Bid Result</a>
+                </Link>
             </li>
             </ul>
         </div>
