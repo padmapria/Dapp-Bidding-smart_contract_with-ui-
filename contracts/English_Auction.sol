@@ -124,14 +124,16 @@ contract English_Auction {
                 
                 uint bid_amount = s_rejected_bidderToBid[bidders[i]];
                 
-                //If unsuccessful bidder has not withdrawan his amount till the auction end
+                //Return If unsuccessful bidder has not withdrawn, till the auction end
                 if(bid_amount > 0){
                     payable(bidders[i]).transfer (bid_amount);
 
-                    //Since dont need to return any amount
+                    //Since amount already returned
                     s_rejected_bidderToBid[bidders[i]] = 0;
                 }           
             }
+            // Reset the bidders list 
+             s_bidders = new address[](0);
         }
         else{
             
