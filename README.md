@@ -11,3 +11,15 @@ GAS_REPORT=true npx hardhat test
 npx hardhat node
 npx hardhat run scripts/deploy.js
 ```
+
+Tools
+--------
+IDE used -> visual studio    
+Ethereum development environment -> HardHat   
+Blockchain used for testing -> Ganache / Infura   
+Faucet -> Rinkeby   
+   
+UI Framework-> NextJS with bootstrap  
+
+Refer steps to follow file in the repo for steps.    
+ 
